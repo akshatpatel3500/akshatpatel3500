@@ -1,5 +1,5 @@
 # 💫 About Me:
-### Hi, I'm Akshat Patel 👋<br><br>Data Scientist & Analyst with 2+ years of experience in data.<br>M.S. Data Science (SJSU)<br><br>I build ETL pipelines, dashboards, and experiments that turn large,<br>messy datasets into clear insights — using Python, SQL, and ML.<br>Experienced in LLM testing, Financial analysis, and time-series & geospatial analysis.<br><br>📫 akshatpateltech@gmail.com
+### Hi, I'm Akshat Patel 👋<br><br>Data Scientist & Analyst with 2+ years of experience in data.<br>M.S. Data Science (SJSU)<br><br>I build ETL pipelines, dashboards, and experiments that turn large,<br>messy datasets into clear insights — using Python, SQL, and ML.<br>Experienced in LLM testing, Financial analysis, and time-series & geospatial analysis.<br><br>📫 akshatpatel3500@gmail.com
 
 
 ## 🌐 Socials:

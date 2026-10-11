@@ -4,6 +4,7 @@
     python3 run.py                       # bundled data/
     python3 run.py --data DIR            # another policy/KB/transcript set
     python3 run.py --transcript FILE     # a variant transcript against bundled policy/KB
+    python3 run.py --explain             # numbered step-by-step workflow view per turn
 """
 import argparse
 import sys
@@ -14,6 +15,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from agent import load_bundle, run_conversation  # noqa: E402
+from agent.explain import format_steps  # noqa: E402
 
 WIDTH = 100
 
@@ -54,12 +56,18 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--data", default=str(ROOT / "data"), help="directory with policy, KB and transcript")
     p.add_argument("--transcript", help="transcript file to use instead of the one in --data")
+    p.add_argument("--explain", action="store_true", help="show the step-by-step workflow view")
     args = p.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to cp1252
     bundle = load_bundle(args.data)
     text = Path(args.transcript).read_text(encoding="utf-8") if args.transcript else None
-    print(render(run_conversation(bundle, transcript_text=text)))
+    results = run_conversation(bundle, transcript_text=text)
+    if args.explain:
+        sep = "\n" + "=" * WIDTH + "\n"
+        print(sep.join(format_steps(r, WIDTH) for r in results))
+    else:
+        print(render(results))
 
 
 if __name__ == "__main__":

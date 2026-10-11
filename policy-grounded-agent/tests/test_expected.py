@@ -367,6 +367,45 @@ class TestVariantFiles(unittest.TestCase):
         self.assertFalse(r.covered)
 
 
+class TestExplainAndChat(unittest.TestCase):
+    """Step-by-step view and live chat reuse the same workflow."""
+
+    def test_steps_present_for_every_turn(self):
+        for r in BASE_TURNS.values():
+            titles = [t for t, _ in r.steps]
+            self.assertEqual(titles[0], "Facts found")
+            self.assertEqual(titles[-1], "Decision")
+
+    def test_1409_steps_show_rule_3_over_search_rank(self):
+        steps = dict(BASE_TURNS["14:09"].steps)
+        rule_lines = " ".join(steps["Rule check (code, fixed priority)"])
+        self.assertIn("Rule 3 (Service-Outage Credit) GOVERNS", rule_lines)
+        self.assertIn("not applied", rule_lines)
+        self.assertIn("$82.50", " ".join(steps["Math (in code)"]))
+
+    def test_1411_steps_show_coverage_failure(self):
+        steps = dict(BASE_TURNS["14:11"].steps)
+        self.assertIn("✗", " ".join(steps["Coverage check"]))
+
+    def test_chat_session(self):
+        script = "how much credit will I get for the outage?\ncan you waive my roaming fee?\n/quit\n"
+        out = subprocess.run(
+            [sys.executable, str(ROOT / "chat.py"), "--brief"], input=script,
+            capture_output=True, text=True, encoding="utf-8", cwd=ROOT,
+        )
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn("$82.50", out.stdout)
+        self.assertIn("I'm escalating this question", out.stdout)
+
+    def test_explain_flag(self):
+        out = subprocess.run(
+            [sys.executable, str(ROOT / "run.py"), "--explain"],
+            capture_output=True, text=True, encoding="utf-8", cwd=ROOT,
+        )
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn("STEP 3  Rule check", out.stdout)
+
+
 # --------------------------------------------------------------------------
 # Structural guarantees
 # --------------------------------------------------------------------------
@@ -380,7 +419,7 @@ class TestStructure(unittest.TestCase):
                 yield node.module
 
     def test_standard_library_only(self):
-        files = list((ROOT / "agent").glob("*.py")) + [ROOT / "run.py"]
+        files = list((ROOT / "agent").glob("*.py")) + [ROOT / "run.py", ROOT / "chat.py"]
         for path in files:
             for name in self._imports(path):
                 top = name.split(".")[0]

@@ -6,6 +6,8 @@ standard library only, no API keys, fully deterministic.
 ```
 ./run.sh                          # per-turn reviewer trace + tests
 python3 run.py                    # trace only
+python3 run.py --explain          # numbered STEP 1..7 workflow view per turn
+python3 chat.py                   # live chat: type customer questions, see reply + steps
 python3 run.py --transcript FILE  # run a variant transcript against the bundled policy/KB
 python3 run.py --transcript data/variants/large_credit.txt   # see data/variants/README.md
 python3 -m unittest discover -s tests -v
@@ -20,6 +22,22 @@ python3 -m unittest discover -s tests -v
 - **computed** values (credit, days, deadlines) produced in code
 - the customer-facing **reply**, which is just the claims joined together
 
+## Seeing the workflow
+
+`python3 run.py --explain` prints each turn as numbered steps:
+1. facts found;
+2. question type and the words that matched;
+3. rule checks in priority order, with ✓/✗/? per condition;
+4. search ranking;
+5. math;
+6. quote check;
+7. decision.
+
+`python3 chat.py` keeps Dana's conversation as context and lets you type new
+customer messages. Each is processed by the same workflow, and the step view is
+printed under the reply. Commands: `/steps` toggles the steps, `/quit` exits.
+`--brief` shows replies only, and `--fresh` starts without the earlier turns.
+
 ## How it works
 
 | Module | Role |
@@ -29,9 +47,10 @@ python3 -m unittest discover -s tests -v
 | `agent/intents.py` | Keyword intent rules |
 | `agent/policy.py` | Rules-as-code with fixed precedence: Rule 5 > Rule 3 > Rule 2; Rule 4 checked per track; Rule 1 separately. `Decimal` arithmetic |
 | `agent/retrieval.py` | Okapi BM25 over KB articles |
+| `agent/explain.py` | Builds the step-by-step view from the same facts and policy functions |
 | `agent/workflow.py` | Per turn: facts, then policy decision, then evidence spans from ranked articles, then claims. A question whose answer is not stated in the evidence is declined and escalated. |
 
-Guarantees enforced by `tests/test_expected.py` (47 tests): locked answers for the
+Guarantees enforced by `tests/test_expected.py` (52 tests): locked answers for the
 four open turns, verbatim citation spans, no uncited amounts or dates, policy
 boundary cases, edited-transcript variations, standard library only, deterministic output.
 

@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
 
+from agent.policy import CaseFacts
+
 TURN_RE = re.compile(r"^\[(\d{2}:\d{2})\] (Customer|Agent) \(([^)]+)\): (.*)$", re.M)
 DATE_RE = re.compile(r"^Date: ([A-Z][a-z]+ \d{1,2}, \d{4})$", re.M)
 MRC_RE = re.compile(r"^Plan: .*?\$([\d,]+\.\d{2})/month recurring charge$", re.M)
@@ -90,3 +92,15 @@ def case_facts(text, turns_so_far):
                         m.group(0),
                     )
     return facts
+
+
+def case_from(facts):
+    """CaseFacts for the policy engine. Dispute history and fraud flags are never in a chat."""
+    noc = facts.get("noc")
+    n = noc.value if noc else {"ticket": None, "start": None, "end": None, "status": "unverifiable"}
+    return CaseFacts(
+        monthly_recurring_charge=facts["mrc"].value,
+        outage_start=n["start"], outage_end=n["end"], noc_ticket=n["ticket"],
+        noc_status=n["status"], request_date=facts["chat_date"].value,
+        prior_resolved_disputes=None, fraud_flags=(),
+    )

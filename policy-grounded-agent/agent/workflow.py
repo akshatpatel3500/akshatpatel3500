@@ -10,10 +10,11 @@ import re
 from dataclasses import dataclass, field
 
 from agent import policy
-from agent.intents import classify
+from agent.explain import build_steps
+from agent.intents import classify, trigger
 from agent.loader import TRANSCRIPT_ID, normalize
 from agent.retrieval import BM25Index
-from agent.transcript import case_facts, parse_turns
+from agent.transcript import case_facts, case_from, parse_turns
 
 TRACE_TOP_K = 5
 ESCALATE_TO = "a Tier 2 Billing Specialist"
@@ -73,6 +74,7 @@ class TurnResult:
     escalate: bool
     escalation_rules: list
     pending_checks: list
+    steps: list = field(default_factory=list)  # [(title, [lines])] workflow explanation
 
     @property
     def cited_ids(self):
@@ -194,17 +196,6 @@ def handle_dispute(turn, facts, ev, ranked):
                    )
 
 
-def _case_from(facts):
-    noc = facts.get("noc")
-    n = noc.value if noc else {"ticket": None, "start": None, "end": None, "status": "unverifiable"}
-    return policy.CaseFacts(
-        monthly_recurring_charge=facts["mrc"].value,
-        outage_start=n["start"], outage_end=n["end"], noc_ticket=n["ticket"],
-        noc_status=n["status"], request_date=facts["chat_date"].value,
-        prior_resolved_disputes=None, fraud_flags=(),
-    )
-
-
 def _rule5_claim(ev, d):
     tier2 = ev.rule("Rule 5", r"must have the credit decision made by a Tier 2 Billing Specialist, not the front-line agent")
     kb = ev.kb_span(r"the new dispute must be handled by a Tier 2 Billing Specialist[^.]*")
@@ -222,7 +213,7 @@ def _rule5_claim(ev, d):
 def handle_credit(turn, facts, ev, ranked):
     if "mrc" not in facts or "chat_date" not in facts:
         return handle_uncovered(turn, "credit_amount", ev, ranked)
-    d = policy.decide_credit(_case_from(facts))
+    d = policy.decide_credit(case_from(facts))
     noc = facts.get("noc")
     claims = []
     computed = {"credit": d.credit, "full_days": d.full_days, "daily_rate": d.daily_rate,
@@ -252,9 +243,8 @@ def handle_credit(turn, facts, ev, ranked):
             ev.said(facts["mrc"].span), ev.said(noc.span),
         ))
         claims.append(claim(
-            f"The {usd(policy.RULE2_CAP)} limit you saw is the general goodwill limit; it does not "
-            "apply here, because a Service-Outage Credit is not counted against, and not capped by, "
-            "that limit.", "fact",
+            f"The general {usd(policy.RULE2_CAP)} goodwill limit does not apply here, because a "
+            "Service-Outage Credit is not counted against, and not capped by, that limit.", "fact",
             ev.rule("Rule 3", r"not counted against, and not capped by, the \$75\.00 General Refund/Goodwill Credit Limit"),
             ev.kb_span(r"is issued separately from, and is not limited by, the standard \$75\.00 goodwill credit ceiling[^.]*?KB-1002"),
         ))
@@ -409,7 +399,9 @@ def run_conversation(bundle, transcript_text=None):
         ev = Evidence(bundle, text, ranked)
         handler = HANDLERS.get(intent)
         if handler:
-            results.append(handler(turn, facts, ev, ranked))
+            result = handler(turn, facts, ev, ranked)
         else:
-            results.append(handle_uncovered(turn, intent, ev, ranked))
+            result = handle_uncovered(turn, intent, ev, ranked)
+        result.steps = build_steps(facts, intent, trigger(turn.text), result)
+        results.append(result)
     return results

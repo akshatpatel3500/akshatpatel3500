@@ -55,6 +55,8 @@ def main(argv=None):
     p.add_argument("--data", default=str(ROOT / "data"), help="directory with policy, KB and transcript")
     p.add_argument("--transcript", help="transcript file to use instead of the one in --data")
     args = p.parse_args(argv)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to cp1252
     bundle = load_bundle(args.data)
     text = Path(args.transcript).read_text(encoding="utf-8") if args.transcript else None
     print(render(run_conversation(bundle, transcript_text=text)))

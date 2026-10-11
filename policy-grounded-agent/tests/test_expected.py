@@ -394,8 +394,8 @@ class TestStructure(unittest.TestCase):
 
     def test_run_script_is_deterministic(self):
         cmd = [sys.executable, str(ROOT / "run.py")]
-        a = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
-        b = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
+        a = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", cwd=ROOT)
+        b = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", cwd=ROOT)
         self.assertEqual(a.returncode, 0, a.stderr)
         self.assertEqual(a.stdout, b.stdout)
         for token in ("14:06", "14:09", "14:11", "14:13", "Rule 3", "KB-1004"):

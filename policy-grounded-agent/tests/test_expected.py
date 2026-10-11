@@ -334,6 +334,39 @@ class TestTranscriptVariations(unittest.TestCase):
         self.assertFalse(r.covered)
 
 
+class TestVariantFiles(unittest.TestCase):
+    """Shipped data/variants/ transcripts produce the branches their README documents."""
+
+    def run_file(self, name):
+        text = (DATA_DIR / "variants" / name).read_text(encoding="utf-8")
+        return by_turn(run_conversation(BUNDLE, transcript_text=text))
+
+    def test_late_request(self):
+        turns = self.run_file("late_request.txt")
+        self.assertEqual(turns["14:09"].governing_rule, "Rule 2")
+        self.assertIn("past that deadline", turns["14:13"].reply)
+
+    def test_large_credit(self):
+        r = self.run_file("large_credit.txt")["14:09"]
+        self.assertEqual(r.computed["credit"], Decimal("330.00"))
+        self.assertEqual(r.action, "decline_escalate")
+        self.assertIn("Rule 4(b)", r.escalation_rules)
+
+    def test_ticket_not_found(self):
+        turns = self.run_file("ticket_not_found.txt")
+        r = turns["14:09"]
+        self.assertEqual(r.action, "decline_escalate")
+        self.assertIn("Rule 4(b)", r.escalation_rules)
+        self.assertIsNone(r.computed["credit"])
+        self.assertNotRegex(r.reply, r"\$\d+\.\d\d")
+        self.assertNotIn("request_deadline", turns["14:13"].computed)
+
+    def test_off_topic_question(self):
+        r = self.run_file("off_topic_question.txt")["14:15"]
+        self.assertEqual(r.action, "decline_escalate")
+        self.assertFalse(r.covered)
+
+
 # --------------------------------------------------------------------------
 # Structural guarantees
 # --------------------------------------------------------------------------

@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 DIST = ROOT / "dist"
 PROJECT_FILES = ["README.md", "SPEC.md", "run.py", "run.sh"]
-PROJECT_GLOBS = ["agent/*.py", "data/*", "tests/*.py"]
+PROJECT_GLOBS = ["agent/*.py", "data/*.*", "data/variants/*", "tests/*.py"]
 FIXED_TIME = (2026, 10, 11, 0, 0, 0)  # reproducible archives
 
 

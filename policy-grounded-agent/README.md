@@ -7,6 +7,7 @@ standard library only, no API keys, fully deterministic.
 ./run.sh                          # per-turn reviewer trace + tests
 python3 run.py                    # trace only
 python3 run.py --transcript FILE  # run a variant transcript against the bundled policy/KB
+python3 run.py --transcript data/variants/large_credit.txt   # see data/variants/README.md
 python3 -m unittest discover -s tests -v
 ```
 
@@ -30,9 +31,16 @@ python3 -m unittest discover -s tests -v
 | `agent/retrieval.py` | Okapi BM25 over KB articles |
 | `agent/workflow.py` | Per turn: facts, then policy decision, then evidence spans from ranked articles, then claims. A question whose answer is not stated in the evidence is declined and escalated. |
 
-Guarantees enforced by `tests/test_expected.py` (43 tests): locked answers for the
+Guarantees enforced by `tests/test_expected.py` (47 tests): locked answers for the
 four open turns, verbatim citation spans, no uncited amounts or dates, policy
 boundary cases, edited-transcript variations, standard library only, deterministic output.
+
+## Variant transcripts
+
+`data/variants/` holds four edited transcripts: late request (Rule 2 fallback),
+$900 plan ($330 credit, Rule 4(b) escalation), NOC ticket not found (Rule 4(b), no
+amount quoted) and an off-topic question (declined). Expected outcomes are in
+`data/variants/README.md` and enforced by tests.
 
 ## Documented assumptions
 

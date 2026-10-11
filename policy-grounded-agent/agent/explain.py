@@ -155,7 +155,8 @@ def build_steps(facts, intent, trigger_text, result):
     gaps = sum(1 for cl in result.claims if cl.kind == "gap")
     sources = ", ".join(sorted(result.cited_ids)) or "none"
     steps.append(("Quote check", [
-        f"{len(result.claims)} claims, {quoted} with exact quotes, {gaps} marked as not covered",
+        f"{len(result.claims)} claim{'s' if len(result.claims) != 1 else ''}, {quoted} with exact quotes, "
+        f"{gaps} marked as not covered",
         f"sources: {sources}",
     ]))
     steps.append(("Decision", [_decision(result)]))

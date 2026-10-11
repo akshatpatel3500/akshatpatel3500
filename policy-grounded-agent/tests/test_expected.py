@@ -397,6 +397,21 @@ class TestExplainAndChat(unittest.TestCase):
         self.assertIn("$82.50", out.stdout)
         self.assertIn("I'm escalating this question", out.stdout)
 
+    def test_html_report(self):
+        out_path = ROOT / "tests" / "_report_test.html"
+        try:
+            run = subprocess.run(
+                [sys.executable, str(ROOT / "report.py"), "--out", str(out_path)],
+                capture_output=True, text=True, encoding="utf-8", cwd=ROOT,
+            )
+            self.assertEqual(run.returncode, 0, run.stderr)
+            page = out_path.read_text(encoding="utf-8")
+            for token in ("credit $82.50", "Rule 3 (Service-Outage Credit) GOVERNS",
+                          "NOT COVERED BY EVIDENCE", "Variant: large credit"):
+                self.assertIn(token, page)
+        finally:
+            out_path.unlink(missing_ok=True)
+
     def test_explain_flag(self):
         out = subprocess.run(
             [sys.executable, str(ROOT / "run.py"), "--explain"],
@@ -419,7 +434,7 @@ class TestStructure(unittest.TestCase):
                 yield node.module
 
     def test_standard_library_only(self):
-        files = list((ROOT / "agent").glob("*.py")) + [ROOT / "run.py", ROOT / "chat.py"]
+        files = list((ROOT / "agent").glob("*.py")) + [ROOT / "run.py", ROOT / "chat.py", ROOT / "report.py"]
         for path in files:
             for name in self._imports(path):
                 top = name.split(".")[0]

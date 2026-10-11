@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 DIST = ROOT / "dist"
-PROJECT_FILES = ["README.md", "SPEC.md", "run.py", "run.sh", "chat.py"]
+PROJECT_FILES = ["README.md", "SPEC.md", "run.py", "run.sh", "chat.py", "report.py", "report.html"]
 PROJECT_GLOBS = ["agent/*.py", "data/*.*", "data/variants/*", "tests/*.py"]
 FIXED_TIME = (2026, 10, 11, 0, 0, 0)  # reproducible archives
 
@@ -30,6 +30,8 @@ def build_project_zip():
 
 
 def main():
+    import subprocess, sys
+    subprocess.run([sys.executable, str(ROOT / "report.py")], check=True, stdout=subprocess.DEVNULL)
     DIST.mkdir(exist_ok=True)
     inner = build_project_zip()
     (DIST / "agent_prototype.zip").write_bytes(inner)

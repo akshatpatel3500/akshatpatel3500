@@ -9,6 +9,7 @@ python3 run.py                    # trace only
 python3 run.py --explain          # numbered STEP 1..7 workflow view per turn
 python3 chat.py                   # live chat: type customer questions, see reply + steps
 python3 report.py                 # regenerate report.html (open it in any browser)
+python3 serve.py                  # live demo page: edit the chat in the browser, click Run
 python3 run.py --transcript FILE  # run a variant transcript against the bundled policy/KB
 python3 run.py --transcript data/variants/large_credit.txt   # see data/variants/README.md
 python3 -m unittest discover -s tests -v
@@ -51,6 +52,14 @@ It shows:
 
 Tabs switch between the original conversation and the four variants.
 
+### Live demo page
+
+`python3 serve.py` opens http://localhost:8000. The conversation is in an
+editable box. You can change the plan charge, outage dates or chat date, or type a
+new customer question, then click **Run agent**, and every card is recomputed.
+**Reset to original** restores Dana's chat. It runs only on your machine.
+Stop it with Ctrl+C.
+
 ## How it works
 
 | Module | Role |
@@ -63,7 +72,7 @@ Tabs switch between the original conversation and the four variants.
 | `agent/explain.py` | Builds the step-by-step view from the same facts and policy functions |
 | `agent/workflow.py` | Per turn: facts, then policy decision, then evidence spans from ranked articles, then claims. A question whose answer is not stated in the evidence is declined and escalated. |
 
-Guarantees enforced by `tests/test_expected.py` (53 tests): locked answers for the
+Guarantees enforced by `tests/test_expected.py` (54 tests): locked answers for the
 four open turns, verbatim citation spans, no uncited amounts or dates, policy
 boundary cases, edited-transcript variations, standard library only, deterministic output.
 

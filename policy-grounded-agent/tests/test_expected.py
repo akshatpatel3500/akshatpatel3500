@@ -412,6 +412,15 @@ class TestExplainAndChat(unittest.TestCase):
         finally:
             out_path.unlink(missing_ok=True)
 
+    def test_live_page_recomputes_edits(self):
+        import serve
+        edited = TRANSCRIPT.replace("$225.00/month", "$900.00/month")
+        page = serve.page(BUNDLE, edited)
+        self.assertIn("credit $330.00", page)
+        self.assertNotIn("credit $82.50", page)
+        added = edited.rstrip() + "\n\n[14:16] Customer (Dana Whitfield): can I get a free phone?\n"
+        self.assertIn("14:16", serve.page(BUNDLE, added, question="can I get a free phone?"))
+
     def test_explain_flag(self):
         out = subprocess.run(
             [sys.executable, str(ROOT / "run.py"), "--explain"],
@@ -434,12 +443,12 @@ class TestStructure(unittest.TestCase):
                 yield node.module
 
     def test_standard_library_only(self):
-        files = list((ROOT / "agent").glob("*.py")) + [ROOT / "run.py", ROOT / "chat.py", ROOT / "report.py"]
+        files = list((ROOT / "agent").glob("*.py")) + [ROOT / "run.py", ROOT / "chat.py", ROOT / "report.py", ROOT / "serve.py"]
         for path in files:
             for name in self._imports(path):
                 top = name.split(".")[0]
                 self.assertTrue(
-                    top == "agent" or top in sys.stdlib_module_names, f"{path.name}: {name}"
+                    top in ("agent", "report") or top in sys.stdlib_module_names, f"{path.name}: {name}"
                 )
 
     def test_policy_engine_does_not_use_retrieval(self):

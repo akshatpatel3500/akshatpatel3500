@@ -1,7 +1,7 @@
 # SPEC — Policy-Grounded Agent Workflow Prototype
 
 Status: **locked before implementation; now implemented.** `tests/test_expected.py` encodes every
-"MUST" below (53 tests, all passing).
+"MUST" below (54 tests, all passing).
 
 ## 1. Problem
 

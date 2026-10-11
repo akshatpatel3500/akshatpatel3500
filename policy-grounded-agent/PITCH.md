@@ -17,10 +17,10 @@ Tip: in STEP 3 and STEP 4 of 14:09, code picks Rule 3 while search ranks the $75
 3. **14:13.** "It gives 30 calendar days from resolution, so **October 21**. It explicitly says this is not the 60-day dispute window."
 4. **Variants (if time).** `python3 run.py --transcript data/variants/large_credit.txt` gives a $330 credit, which escalates under Rule 4(b). `ticket_not_found.txt` escalates without quoting any amount.
 
-**Live (if judges want):** `python chat.py`, then type their question, e.g. "can you waive my roaming fee?" → declined, or "how much credit do I get?" → $82.50 with steps.
+**Live (if judges want):** `python serve.py`, change `$225.00/month` to `$900.00/month` and click Run, and 14:09 turns into $330.00 ESCALATE. Or type a judge's question in the box. Terminal alternative: `python chat.py`, then type their question, e.g. "can you waive my roaming fee?" → declined, or "how much credit do I get?" → $82.50 with steps.
 
 ## 1:30 — Proof (15s)
-"53 tests; the core 43 were locked *before* any code was written. They cover the four answers, exact citation quotes, no uncited dollar amounts or dates, every policy boundary (4 hours, $300, 30 days, day 30 versus day 31), edited transcripts, standard library only, and byte-identical output on every run."
+"54 tests; the core 43 were locked *before* any code was written. They cover the four answers, exact citation quotes, no uncited dollar amounts or dates, every policy boundary (4 hours, $300, 30 days, day 30 versus day 31), edited transcripts, standard library only, and byte-identical output on every run."
 
 ## 1:45 — What's next (15s)
 "The memo has the measurement plan: about 300 perturbed cases, scored on rule-selection accuracy, hallucination rate (claims whose quote doesn't support them), and decline calibration. When an LLM writes the phrasing, this claim-to-quote check stays as the gate."

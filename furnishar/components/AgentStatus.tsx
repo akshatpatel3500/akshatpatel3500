@@ -46,7 +46,7 @@ export default function AgentStatus({ steps, log = [] }: { steps: AgentStep[]; l
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-400">Agent Pipeline</h3>
-        {attempt > 1 && (
+        {attempt > 1 && steps.some((s) => s.status === "running") && (
           <span className="animate-pulse rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-semibold text-amber-300">
             Retry {attempt}/{max}…
           </span>

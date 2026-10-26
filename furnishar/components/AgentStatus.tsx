@@ -3,10 +3,13 @@
 import { useEffect, useRef } from 'react';
 import type { AgentStep } from '@/lib/types';
 
-const META: Record<string, { icon: string; role: string; engine: string }> = {
+export type AgentMeta = Record<string, { icon: string; role: string; engine: string }>;
+
+const META: AgentMeta = {
   'Room Analyzer': { icon: '📐', role: 'Maps walls, doors & windows', engine: 'Argon / geometry' },
   Designer: { icon: '🎨', role: 'Picks IKEA pieces & places them', engine: 'Gemini 4 Argon' },
   Verifier: { icon: '🛡️', role: 'Bounds · collisions · walkways · doors · budget', engine: 'Deterministic code' },
+  Visualizer: { icon: '🖼️', role: 'Renders the pieces into your photo', engine: 'Gemini image model' },
 };
 
 function Indicator({ status }: { status: AgentStep['status'] }) {
@@ -33,7 +36,16 @@ function Indicator({ status }: { status: AgentStep['status'] }) {
   }
 }
 
-export default function AgentStatus({ steps, log = [] }: { steps: AgentStep[]; log?: string[] }) {
+export default function AgentStatus({
+  steps,
+  log = [],
+  meta: metaOverrides,
+}: {
+  steps: AgentStep[];
+  log?: string[];
+  /** Per-agent descriptions for pipelines that use the agents differently (e.g. photo mode). */
+  meta?: AgentMeta;
+}) {
   const logRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' });
@@ -55,7 +67,7 @@ export default function AgentStatus({ steps, log = [] }: { steps: AgentStep[]; l
 
       <ol className="relative">
         {steps.map((step, i) => {
-          const meta = META[step.agent] ?? { icon: '🤖', role: '', engine: '' };
+          const meta = metaOverrides?.[step.agent] ?? META[step.agent] ?? { icon: '🤖', role: '', engine: '' };
           const isLast = i === steps.length - 1;
           const lineDone = step.status === 'complete';
           return (

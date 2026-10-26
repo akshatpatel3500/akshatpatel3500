@@ -48,3 +48,18 @@ the north wall and a window on the south wall.
 ```bash
 npx tsx scripts/smoke.ts   # runs the offline designer + verifier on a few room sizes
 ```
+
+## Photo mode (`/photo`)
+
+Upload a photo of a real room and see IKEA pieces placed into it:
+
+| Agent | Engine | What it does |
+| --- | --- | --- |
+| Room Analyzer | Gemini 4 Argon (vision) | Finds up to 3 empty spaces, estimates their size from reference objects (outlets, TV, baseboards), and reads the room's style and colours |
+| Designer | Gemini 4 Argon | Suggests 2–3 catalog products per space that suit the room and budget |
+| Verifier | Deterministic code (`checkFit` in `lib/photo.ts`) | Checks each product's real IKEA width against the space; flags depth and height problems. Typing a tape measurement re-checks instantly |
+| Visualizer | Gemini image model (`gemini-3.1-flash-image` by default) | Edits the photo to add the chosen piece; pieces can be stacked, undone, and compared with the original |
+
+Photo mode needs `GEMINI_API_KEY`; there is no offline fallback for it. Override the image model with
+`GEMINI_IMAGE_MODEL` in `.env.local`. Sizes read from a photo are estimates, and the rendered picture is an AI
+visualization, but the product sizes and prices are IKEA's real ones.
